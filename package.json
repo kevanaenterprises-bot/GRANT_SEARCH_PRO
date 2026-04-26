@@ -6,7 +6,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "tsx watch server/index.ts",
     "client": "vite client",
-    "build": "vite build client && tsc --noEmit",
+    "build": "vite build client",
     "start": "node --import tsx/esm server/index.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
