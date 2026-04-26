@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
+import PDFDocument from 'pdfkit';
 import { db } from '../db.js';
 import { applicationDrafts, businessProfiles, savedGrants } from '../schema.js';
 import { eq } from 'drizzle-orm';
@@ -82,6 +83,95 @@ Generate a JSON object with these application fields filled in:
     res.json({ ...draft, fields });
   } catch (err: any) {
     console.error('Draft generation error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Export draft as PDF
+draftsRouter.get('/:id/pdf', async (req, res) => {
+  try {
+    const [draft] = await db.select().from(applicationDrafts).where(eq(applicationDrafts.id, parseInt(req.params.id)));
+    if (!draft) return res.status(404).json({ error: 'Draft not found' });
+
+    let grant: any = null;
+    let profile: any = null;
+    if (draft.grantId) {
+      [grant] = await db.select().from(savedGrants).where(eq(savedGrants.id, draft.grantId));
+    }
+    if (draft.profileId) {
+      [profile] = await db.select().from(businessProfiles).where(eq(businessProfiles.id, draft.profileId));
+    }
+
+    const fields = JSON.parse(draft.fields || '{}');
+
+    const FIELD_LABELS: Record<string, string> = {
+      project_title: 'Project Title',
+      executive_summary: 'Executive Summary',
+      organizational_background: 'Organizational Background',
+      project_description: 'Project Description',
+      goals_and_objectives: 'Goals & Objectives',
+      target_population: 'Target Population',
+      evaluation_plan: 'Evaluation Plan',
+      budget_narrative: 'Budget Narrative',
+      sustainability_plan: 'Sustainability Plan',
+      certifications: 'Certifications',
+    };
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="grant-draft-${draft.id}.pdf"`);
+
+    const doc = new PDFDocument({ margin: 60, size: 'LETTER' });
+    doc.pipe(res);
+
+    // Header
+    doc.rect(0, 0, doc.page.width, 80).fill('#1d4ed8');
+    doc.fillColor('white').fontSize(20).font('Helvetica-Bold').text('Grant Application Draft', 60, 24);
+    doc.fontSize(11).font('Helvetica').text(`${profile?.name || 'Business'} · Generated ${new Date().toLocaleDateString()}`, 60, 50);
+    doc.fillColor('#0f172a').moveDown(3);
+
+    // Grant title banner
+    if (grant?.title) {
+      doc.fontSize(13).font('Helvetica-Bold').fillColor('#1d4ed8').text('For:', 60, 100);
+      doc.fontSize(13).font('Helvetica').fillColor('#0f172a').text(grant.title, 90, 100, { width: doc.page.width - 150 });
+      doc.moveDown(2);
+    }
+
+    // Content sections
+    let y = grant?.title ? 140 : 100;
+    doc.y = y;
+
+    for (const [key, label] of Object.entries(FIELD_LABELS)) {
+      const val = fields[key];
+      if (!val) continue;
+
+      // Section header
+      doc.fillColor('#1d4ed8').fontSize(12).font('Helvetica-Bold').text(label.toUpperCase(), { continued: false });
+      doc.moveTo(60, doc.y).lineTo(doc.page.width - 60, doc.y).strokeColor('#e2e8f0').stroke();
+      doc.moveDown(0.4);
+
+      // Content
+      doc.fillColor('#0f172a').fontSize(11).font('Helvetica');
+      if (Array.isArray(val)) {
+        val.forEach((item: string, i: number) => doc.text(`${i + 1}. ${item}`, { indent: 10 }));
+      } else {
+        doc.text(val, { lineGap: 3 });
+      }
+      doc.moveDown(1.5);
+    }
+
+    // Footer
+    const pageRange = doc.bufferedPageRange();
+    for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
+      doc.switchToPage(i);
+      doc.fillColor('#94a3b8').fontSize(9).text(
+        `Grant Intelligence · ${profile?.name || ''} · Draft #${draft.id} · Page ${i + 1}`,
+        60, doc.page.height - 40, { align: 'center', width: doc.page.width - 120 }
+      );
+    }
+
+    doc.end();
+  } catch (err: any) {
+    console.error('PDF export error:', err);
     res.status(500).json({ error: err.message });
   }
 });

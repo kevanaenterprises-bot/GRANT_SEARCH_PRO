@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'wouter';
 import Nav from '@/components/Nav';
-import { Save, ArrowLeft, Loader2, Copy, Check } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Copy, Check, FileDown } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 interface Draft {
@@ -92,6 +92,11 @@ export default function DraftView() {
               {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
               Copy All
             </button>
+            <a href={`/api/drafts/${draft.id}/pdf`} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 text-sm">
+              <FileDown className="w-4 h-4" />
+              Export PDF
+            </a>
             <button onClick={save} disabled={saving}
               className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-700 text-white rounded-lg text-sm font-medium hover:bg-blue-800 disabled:opacity-50">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

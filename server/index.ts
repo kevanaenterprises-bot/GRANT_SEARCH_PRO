@@ -5,6 +5,7 @@ import { grantsRouter } from './routes/grants.js';
 import { profilesRouter } from './routes/profiles.js';
 import { scoreRouter } from './routes/score.js';
 import { draftsRouter } from './routes/drafts.js';
+import { startDigestCron, runDigest } from './digest.js';
 import './db.js'; // run migrations on startup
 
 const app = express();
@@ -20,6 +21,16 @@ app.use('/api/profiles', profilesRouter);
 app.use('/api/score', scoreRouter);
 app.use('/api/drafts', draftsRouter);
 
+app.post('/api/digest/run', async (_req, res) => {
+  try {
+    await runDigest(true);
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Grant Intelligence server running on http://localhost:${PORT}`);
+  startDigestCron();
 });
