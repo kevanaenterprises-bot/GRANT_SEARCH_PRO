@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// page.evaluate() callbacks run in browser context — document/window are available there
 import { withIncognitoPage } from './engine.js';
 
 export interface ScrapedGrant {

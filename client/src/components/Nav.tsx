@@ -1,6 +1,7 @@
 import { useLocation } from 'wouter';
-import { LayoutDashboard, Search, Building2, FileText, Globe } from 'lucide-react';
+import { LayoutDashboard, Search, Building2, FileText, Globe, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -11,6 +12,7 @@ const links = [
 
 export default function Nav() {
   const [location, navigate] = useLocation();
+  const { user } = useAuth();
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4 flex items-center gap-1 h-14">
@@ -35,6 +37,22 @@ export default function Nav() {
             {label}
           </button>
         ))}
+        {user && (
+          <button
+            onClick={() => navigate('/account')}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ml-auto',
+              location === '/account'
+                ? 'bg-blue-50 text-blue-700'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            )}
+          >
+            <div className="w-5 h-5 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-bold">
+              {user.name?.[0]?.toUpperCase()}
+            </div>
+            <span className="hidden sm:inline">{user.name?.split(' ')[0]}</span>
+          </button>
+        )}
       </div>
     </nav>
   );

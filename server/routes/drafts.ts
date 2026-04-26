@@ -3,15 +3,17 @@ import Anthropic from '@anthropic-ai/sdk';
 import PDFDocument from 'pdfkit';
 import { db } from '../db.js';
 import { applicationDrafts, businessProfiles, savedGrants } from '../schema.js';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import type { AuthRequest } from '../auth.js';
 
 export const draftsRouter = Router();
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-draftsRouter.get('/', async (_req, res) => {
+draftsRouter.get('/', async (req: AuthRequest, res) => {
   try {
-    const drafts = await db.select().from(applicationDrafts);
+    const drafts = await db.select().from(applicationDrafts)
+      .where(eq(applicationDrafts.userId, req.userId!));
     res.json(drafts);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -19,12 +21,16 @@ draftsRouter.get('/', async (_req, res) => {
 });
 
 // Generate an application draft using AI
-draftsRouter.post('/generate', async (req, res) => {
+draftsRouter.post('/generate', async (req: AuthRequest, res) => {
   try {
     const { grantId, profileId } = req.body;
 
-    const [grant] = await db.select().from(savedGrants).where(eq(savedGrants.id, grantId));
-    const [profile] = await db.select().from(businessProfiles).where(eq(businessProfiles.id, profileId));
+    const [grant] = await db.select().from(savedGrants).where(and(
+      eq(savedGrants.id, grantId), eq(savedGrants.userId, req.userId!)
+    ));
+    const [profile] = await db.select().from(businessProfiles).where(and(
+      eq(businessProfiles.id, profileId), eq(businessProfiles.userId, req.userId!)
+    ));
     if (!grant || !profile) return res.status(404).json({ error: 'Grant or profile not found' });
 
     const naics = JSON.parse(profile.naicsCodes || '[]');
@@ -73,6 +79,7 @@ Generate a JSON object with these application fields filled in:
     const fields = JSON.parse(jsonMatch[0]);
 
     const [draft] = await db.insert(applicationDrafts).values({
+      userId: req.userId!,
       grantId,
       profileId,
       fields: JSON.stringify(fields),
@@ -88,9 +95,12 @@ Generate a JSON object with these application fields filled in:
 });
 
 // Export draft as PDF
-draftsRouter.get('/:id/pdf', async (req, res) => {
+draftsRouter.get('/:id/pdf', async (req: AuthRequest, res) => {
   try {
-    const [draft] = await db.select().from(applicationDrafts).where(eq(applicationDrafts.id, parseInt(req.params.id)));
+    const [draft] = await db.select().from(applicationDrafts).where(and(
+      eq(applicationDrafts.id, parseInt(req.params.id)),
+      eq(applicationDrafts.userId, req.userId!)
+    ));
     if (!draft) return res.status(404).json({ error: 'Draft not found' });
 
     let grant: any = null;
@@ -176,14 +186,17 @@ draftsRouter.get('/:id/pdf', async (req, res) => {
   }
 });
 
-draftsRouter.put('/:id', async (req, res) => {
+draftsRouter.put('/:id', async (req: AuthRequest, res) => {
   try {
     const { fields, status } = req.body;
     const [updated] = await db.update(applicationDrafts).set({
       fields: JSON.stringify(fields),
       status,
-      updatedAt: new Date(),
-    }).where(eq(applicationDrafts.id, parseInt(req.params.id))).returning();
+      updatedAt: Date.now(),
+    }).where(and(
+      eq(applicationDrafts.id, parseInt(req.params.id)),
+      eq(applicationDrafts.userId, req.userId!)
+    )).returning();
     res.json(updated);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { savedGrants, businessProfiles } from '../schema.js';
-import { eq, desc } from 'drizzle-orm';
+import { and, eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import type { AuthRequest } from '../auth.js';
 import { searchSBIR, getSBAEvergreenPrograms } from '../sources/sba.js';
 import { getStatePrograms } from '../sources/statePortals.js';
 
@@ -117,12 +118,15 @@ grantsRouter.post('/search', async (req, res) => {
 });
 
 // Smart search: auto-build keywords from a business profile + run multiple queries
-grantsRouter.post('/smart-search', async (req, res) => {
+grantsRouter.post('/smart-search', async (req: AuthRequest, res) => {
   try {
     const { profileId, oppStatuses = 'posted' } = req.body;
     if (!profileId) return res.status(400).json({ error: 'profileId required' });
 
-    const [profile] = await db.select().from(businessProfiles).where(eq(businessProfiles.id, profileId));
+    const [profile] = await db.select().from(businessProfiles).where(and(
+      eq(businessProfiles.id, profileId),
+      eq(businessProfiles.userId, req.userId!)
+    ));
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
 
     const keywords = buildKeywordsFromProfile(profile);
@@ -153,9 +157,11 @@ grantsRouter.post('/smart-search', async (req, res) => {
 });
 
 // Get all saved grants
-grantsRouter.get('/', async (_req, res) => {
+grantsRouter.get('/', async (req: AuthRequest, res) => {
   try {
-    const grants = await db.select().from(savedGrants).orderBy(desc(savedGrants.updatedAt));
+    const grants = await db.select().from(savedGrants)
+      .where(eq(savedGrants.userId, req.userId!))
+      .orderBy(desc(savedGrants.updatedAt));
     res.json(grants);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -163,11 +169,12 @@ grantsRouter.get('/', async (_req, res) => {
 });
 
 // Save a grant
-grantsRouter.post('/save', async (req, res) => {
+grantsRouter.post('/save', async (req: AuthRequest, res) => {
   try {
     const grant = req.body;
     const now = Date.now();
     const [saved] = await db.insert(savedGrants).values({
+      userId: req.userId!,
       opportunityId: grant.opportunityId,
       title: grant.title,
       agency: grant.agency,
@@ -196,12 +203,12 @@ grantsRouter.post('/save', async (req, res) => {
 });
 
 // Update grant status or notes
-grantsRouter.patch('/:id', async (req, res) => {
+grantsRouter.patch('/:id', async (req: AuthRequest, res) => {
   try {
     const { status, notes } = req.body;
     const [updated] = await db.update(savedGrants)
       .set({ status, notes, updatedAt: Date.now() })
-      .where(eq(savedGrants.id, parseInt(req.params.id)))
+      .where(and(eq(savedGrants.id, parseInt(req.params.id)), eq(savedGrants.userId, req.userId!)))
       .returning();
     res.json(updated);
   } catch (err: any) {
@@ -210,9 +217,12 @@ grantsRouter.patch('/:id', async (req, res) => {
 });
 
 // Delete a saved grant
-grantsRouter.delete('/:id', async (req, res) => {
+grantsRouter.delete('/:id', async (req: AuthRequest, res) => {
   try {
-    await db.delete(savedGrants).where(eq(savedGrants.id, parseInt(req.params.id)));
+    await db.delete(savedGrants).where(and(
+      eq(savedGrants.id, parseInt(req.params.id)),
+      eq(savedGrants.userId, req.userId!)
+    ));
     res.json({ ok: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -220,12 +230,15 @@ grantsRouter.delete('/:id', async (req, res) => {
 });
 
 // Multi-source discovery: Grants.gov + SBA + State portals combined
-grantsRouter.post('/discover', async (req, res) => {
+grantsRouter.post('/discover', async (req: AuthRequest, res) => {
   try {
     const { profileId, oppStatuses = 'posted' } = req.body;
     if (!profileId) return res.status(400).json({ error: 'profileId required' });
 
-    const [profile] = await db.select().from(businessProfiles).where(eq(businessProfiles.id, profileId));
+    const [profile] = await db.select().from(businessProfiles).where(and(
+      eq(businessProfiles.id, profileId),
+      eq(businessProfiles.userId, req.userId!)
+    ));
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
 
     const naics: string[] = JSON.parse(profile.naicsCodes || '[]');

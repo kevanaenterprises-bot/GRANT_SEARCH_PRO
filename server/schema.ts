@@ -1,10 +1,24 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  name: text('name').notNull(),
+  plan: text('plan').notNull().default('free'), // free | starter | pro | business
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
+  stripeCurrentPeriodEnd: integer('stripe_current_period_end'), // unix timestamp
+  samApiKey: text('sam_api_key'), // AES-encrypted
+  createdAt: integer('created_at'),
+});
+
 export const businessProfiles = sqliteTable('business_profiles', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull(),
   name: text('name').notNull(),
   ein: text('ein'),
-  uei: text('uei'), // SAM.gov Unique Entity Identifier (12-char alphanumeric)
+  uei: text('uei'),
   naicsCodes: text('naics_codes').notNull(),
   state: text('state').notNull(),
   city: text('city'),
@@ -17,7 +31,8 @@ export const businessProfiles = sqliteTable('business_profiles', {
 
 export const savedGrants = sqliteTable('saved_grants', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  opportunityId: text('opportunity_id').notNull().unique(),
+  userId: integer('user_id').notNull(),
+  opportunityId: text('opportunity_id').notNull(),
   title: text('title').notNull(),
   agency: text('agency'),
   description: text('description'),
@@ -41,6 +56,7 @@ export const savedGrants = sqliteTable('saved_grants', {
 
 export const applicationDrafts = sqliteTable('application_drafts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull(),
   grantId: integer('grant_id'),
   profileId: integer('profile_id'),
   fields: text('fields').notNull(),
