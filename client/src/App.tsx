@@ -3,6 +3,7 @@ import Dashboard from './pages/Dashboard';
 import Search from './pages/Search';
 import ProfileSetup from './pages/ProfileSetup';
 import DraftView from './pages/DraftView';
+import DeepSearch from './pages/DeepSearch';
 import { Toaster } from './components/ui/Toaster';
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/search" component={Search} />
         <Route path="/profile" component={ProfileSetup} />
         <Route path="/drafts/:id" component={DraftView} />
+        <Route path="/deep-search" component={DeepSearch} />
       </Switch>
       <Toaster />
     </div>

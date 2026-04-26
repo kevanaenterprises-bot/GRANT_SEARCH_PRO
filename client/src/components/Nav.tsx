@@ -1,10 +1,11 @@
 import { useLocation } from 'wouter';
-import { LayoutDashboard, Search, Building2, FileText } from 'lucide-react';
+import { LayoutDashboard, Search, Building2, FileText, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/search', label: 'Find Grants', icon: Search },
+  { href: '/deep-search', label: 'Deep Search', icon: Globe },
   { href: '/profile', label: 'My Business', icon: Building2 },
 ];
 
