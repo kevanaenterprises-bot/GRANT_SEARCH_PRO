@@ -20,6 +20,7 @@ profilesRouter.post('/', async (req, res) => {
     const [profile] = await db.insert(businessProfiles).values({
       name: body.name,
       ein: body.ein,
+      uei: body.uei?.trim().toUpperCase() || null,
       naicsCodes: JSON.stringify(body.naicsCodes || []),
       state: body.state,
       city: body.city,
@@ -40,6 +41,7 @@ profilesRouter.put('/:id', async (req, res) => {
     const [profile] = await db.update(businessProfiles).set({
       name: body.name,
       ein: body.ein,
+      uei: body.uei?.trim().toUpperCase() || null,
       naicsCodes: JSON.stringify(body.naicsCodes || []),
       state: body.state,
       city: body.city,

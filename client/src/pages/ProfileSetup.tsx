@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Nav from '@/components/Nav';
-import { Building2, Plus, Trash2, Save, Loader2, Check } from 'lucide-react';
+import SamStatus from '@/components/SamStatus';
+import { Building2, Plus, Trash2, Save, Loader2, Check, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 const NAICS_SUGGESTIONS = [
@@ -30,6 +31,7 @@ interface Profile {
   id?: number;
   name: string;
   ein: string;
+  uei: string;
   naicsCodes: string[];
   state: string;
   city: string;
@@ -39,7 +41,7 @@ interface Profile {
   description: string;
 }
 
-const BLANK: Profile = { name: '', ein: '', naicsCodes: [], state: '', city: '', employeeCount: '', annualRevenue: '', ownershipType: '', description: '' };
+const BLANK: Profile = { name: '', ein: '', uei: '', naicsCodes: [], state: '', city: '', employeeCount: '', annualRevenue: '', ownershipType: '', description: '' };
 
 export default function ProfileSetup() {
   const [profiles, setProfiles] = useState<(Profile & { id: number })[]>([]);
@@ -137,6 +139,16 @@ export default function ProfileSetup() {
               </div>
             </div>
 
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" /> SAM.gov UEI <span className="font-normal text-slate-400">(12-character Unique Entity Identifier)</span>
+              </label>
+              <input className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                placeholder="e.g. ABC123DEF456" maxLength={12}
+                value={editing.uei} onChange={e => setEditing(p => ({ ...p, uei: e.target.value.toUpperCase() }))} />
+              <p className="text-xs text-slate-400 mt-1">Find yours at sam.gov → search your business → Entity Overview</p>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">State *</label>
@@ -226,17 +238,36 @@ export default function ProfileSetup() {
         {profiles.length > 0 && (
           <div>
             <h2 className="font-semibold text-slate-700 mb-3 text-sm">Saved Profiles</h2>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {profiles.map(p => (
-                <div key={p.id} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-sm text-slate-900">{p.name}</p>
-                    <p className="text-xs text-slate-500">{p.state}{p.city ? ` · ${p.city}` : ''} · {p.naicsCodes.join(', ') || 'No NAICS codes'}</p>
+                <div key={p.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm text-slate-900">{p.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {p.state}{p.city ? ` · ${p.city}` : ''} · {p.naicsCodes.join(', ') || 'No NAICS codes'}
+                        {p.uei && <span className="ml-2 font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{p.uei}</span>}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <button onClick={() => startEdit(p)} className="text-xs px-2 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Edit</button>
+                      <button onClick={() => deleteProfile(p.id)} className="text-xs px-2 py-1 rounded border border-red-200 hover:bg-red-50 text-red-600">Delete</button>
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => startEdit(p)} className="text-xs px-2 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Edit</button>
-                    <button onClick={() => deleteProfile(p.id)} className="text-xs px-2 py-1 rounded border border-red-200 hover:bg-red-50 text-red-600">Delete</button>
-                  </div>
+                  {/* SAM.gov status — only show if UEI is set */}
+                  {p.uei && (
+                    <div className="px-4 pb-4">
+                      <SamStatus uei={p.uei} profileName={p.name} />
+                    </div>
+                  )}
+                  {!p.uei && (
+                    <div className="px-4 pb-3">
+                      <p className="text-xs text-slate-400 flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" />
+                        Add a UEI above to enable SAM.gov registration checks
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

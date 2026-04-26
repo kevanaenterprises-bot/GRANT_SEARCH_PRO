@@ -64,4 +64,7 @@ await client.executeMultiple(`
   );
 `);
 
+// Non-destructive migrations for new columns
+await client.execute(`ALTER TABLE business_profiles ADD COLUMN uei TEXT`).catch(() => {});
+
 console.log('✅ Database ready at data/grants.db');

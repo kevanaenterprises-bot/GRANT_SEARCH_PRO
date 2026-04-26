@@ -4,6 +4,7 @@ export const businessProfiles = sqliteTable('business_profiles', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   ein: text('ein'),
+  uei: text('uei'), // SAM.gov Unique Entity Identifier (12-char alphanumeric)
   naicsCodes: text('naics_codes').notNull(),
   state: text('state').notNull(),
   city: text('city'),
