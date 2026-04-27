@@ -43,6 +43,8 @@ export default function Account() {
   const [savingKey, setSavingKey] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -84,6 +86,27 @@ export default function Account() {
     } catch (err: any) {
       toast({ title: 'Checkout failed', description: err.message, variant: 'destructive' });
       setCheckoutLoading(null);
+    }
+  };
+
+  const redeemPromo = async () => {
+    setPromoLoading(true);
+    try {
+      const res = await fetch('/api/billing/promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code: promoCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      await refresh();
+      setPromoCode('');
+      toast({ title: 'Promo code applied!', description: 'Agency plan unlocked.' });
+    } catch (err: any) {
+      toast({ title: 'Invalid code', description: err.message, variant: 'destructive' });
+    } finally {
+      setPromoLoading(false);
     }
   };
 
@@ -196,6 +219,32 @@ export default function Account() {
             </button>
           </div>
         </div>
+
+        {/* Promo code */}
+        {user?.plan === 'free' && (
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm mb-5">
+            <h2 className="font-semibold text-slate-800 mb-1">Have a promo code?</h2>
+            <p className="text-xs text-slate-500 mb-4">Enter it below to unlock full access instantly.</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="flex-1 px-3.5 py-2.5 rounded-lg border border-slate-200 text-sm font-mono uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="GSP-XXXX-XXXX"
+                value={promoCode}
+                onChange={e => setPromoCode(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === 'Enter' && promoCode.trim() && redeemPromo()}
+              />
+              <button
+                onClick={redeemPromo}
+                disabled={!promoCode.trim() || promoLoading}
+                className="px-4 py-2.5 bg-blue-700 text-white rounded-lg text-sm font-medium hover:bg-blue-800 disabled:opacity-50 flex items-center gap-2"
+              >
+                {promoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                Apply
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Upgrade plans */}
         {user?.plan === 'free' && (

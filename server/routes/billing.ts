@@ -86,6 +86,17 @@ billingRouter.get('/status', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// Promo code — grants agency-level access without Stripe
+billingRouter.post('/promo', requireAuth, async (req: AuthRequest, res) => {
+  const { code } = req.body as { code: string };
+  const validCode = process.env.PROMO_CODE;
+  if (!validCode || code?.trim().toUpperCase() !== validCode.toUpperCase()) {
+    return res.status(400).json({ error: 'Invalid promo code' });
+  }
+  await db.update(users).set({ plan: 'agency' }).where(eq(users.id, req.userId!));
+  res.json({ ok: true, plan: 'agency' });
+});
+
 // Stripe webhook — keeps plan in sync automatically
 billingRouter.post('/webhook', async (req: Request, res) => {
   const sig = req.headers['stripe-signature'] as string;
