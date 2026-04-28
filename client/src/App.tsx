@@ -17,8 +17,32 @@ const PLANS = [
 ];
 
 function TrialWall() {
-  const { user } = useAuth();
+  const { user, refetch } = useAuth() as any;
   const [, navigate] = useLocation();
+  const [promoCode, setPromoCode] = useState('');
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  const applyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await fetch('/api/billing/promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setPromoError(data.error || 'Invalid code'); return; }
+      if (refetch) await refetch();
+      else window.location.reload();
+    } catch {
+      setPromoError('Something went wrong');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const startTrial = async (plan: string) => {
     const res = await fetch('/api/billing/checkout', {
@@ -107,6 +131,32 @@ function TrialWall() {
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Promo code */}
+        <div style={{ maxWidth: 360, margin: '0 auto 20px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              value={promoCode}
+              onChange={e => { setPromoCode(e.target.value); setPromoError(''); }}
+              onKeyDown={e => e.key === 'Enter' && applyPromo()}
+              placeholder="Have a promo code?"
+              style={{
+                flex: 1, padding: '10px 14px', borderRadius: 10, fontSize: 13,
+                background: 'rgba(250,243,232,0.08)', border: '1px solid rgba(201,169,110,0.25)',
+                color: '#FAF3E8', outline: 'none',
+              }}
+            />
+            <button onClick={applyPromo} disabled={promoLoading}
+              style={{
+                padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+                background: 'rgba(201,169,110,0.20)', border: '1px solid rgba(201,169,110,0.35)',
+                color: '#C9A96E', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}>
+              {promoLoading ? '…' : 'Apply'}
+            </button>
+          </div>
+          {promoError && <p style={{ color: '#F87171', fontSize: 12, margin: '6px 0 0' }}>{promoError}</p>}
         </div>
 
         <div style={{ textAlign: 'center' }}>
