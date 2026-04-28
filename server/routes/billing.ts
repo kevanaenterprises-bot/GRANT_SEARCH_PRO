@@ -44,6 +44,7 @@ billingRouter.post('/checkout', requireAuth, async (req: AuthRequest, res) => {
       customer: customerId,
       payment_method_types: ['card'],
       payment_method_collection: 'always',
+      allow_promotion_codes: true,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${appUrl}/account?upgraded=1`,
