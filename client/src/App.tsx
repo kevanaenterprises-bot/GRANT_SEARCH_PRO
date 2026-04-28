@@ -31,43 +31,93 @@ function TrialWall() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-10 h-10 bg-blue-700 rounded-xl flex items-center justify-center mb-4">
-        <FileText className="w-5 h-5 text-white" />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(165deg, #2C1810 0%, #3E2723 25%, #4E342E 45%, #5D4037 65%, #3E2723 85%, #1B0F0A 100%)',
+      position: 'relative', overflow: 'hidden',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '48px 24px',
+    }}>
+      {/* Orbs */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', width: 500, height: 500, top: '-5%', left: '5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,169,110,0.10) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', width: 380, height: 380, bottom: '5%', right: '5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(160,82,45,0.12) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', width: 220, height: 220, top: '50%', left: '60%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,201,128,0.07) 0%, transparent 70%)' }} />
       </div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-1">Start Your Free 14-Day Trial</h1>
-      <p className="text-slate-500 text-sm mb-8 text-center max-w-sm">
-        Hi {user?.name?.split(' ')[0]} — pick a plan to get started. You won't be charged until your trial ends. Cancel anytime.
-      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mb-6">
-        {PLANS.map(plan => (
-          <div key={plan.key} className={`bg-white rounded-2xl border p-6 flex flex-col ${plan.highlight ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-200'}`}>
-            {plan.highlight && <div className="text-xs font-bold text-blue-600 uppercase tracking-wide mb-2">Most Popular</div>}
-            <div className="font-bold text-slate-900 text-lg">{plan.label}</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1 mb-3">{plan.price}</div>
-            <ul className="space-y-1.5 flex-1 mb-5">
-              {plan.features.map(f => (
-                <li key={f} className="text-sm text-slate-600 flex items-start gap-1.5">
-                  <span className="text-blue-500 mt-0.5">✓</span> {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => startTrial(plan.key)}
-              className={`w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors ${plan.highlight ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
-            >
-              Start Free Trial <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 860 }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14,
+            background: 'linear-gradient(135deg, #C9A96E, #8B4513)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px',
+            boxShadow: '0 8px 24px rgba(201,169,110,0.3)',
+          }}>
+            <FileText style={{ width: 24, height: 24, color: '#1B0F0A' }} />
           </div>
-        ))}
-      </div>
+          <h1 style={{ color: '#FAF3E8', fontSize: 28, fontWeight: 800, margin: '0 0 8px', letterSpacing: '-0.5px' }}>
+            Start Your Free 14-Day Trial
+          </h1>
+          <p style={{ color: 'rgba(250,243,232,0.50)', fontSize: 15, margin: 0 }}>
+            Hi {user?.name?.split(' ')[0]} — pick a plan. You won't be charged until your trial ends.
+          </p>
+        </div>
 
-      <div className="text-center space-y-1">
-        <p className="text-xs text-slate-400">14-day free trial · Card required · Cancel before trial ends and you won't be charged</p>
-        <button onClick={() => navigate('/account')} className="text-xs text-slate-400 underline hover:text-slate-600">
-          Manage account
-        </button>
+        {/* Plan cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 28 }}>
+          {PLANS.map(plan => (
+            <div key={plan.key} style={{
+              background: plan.highlight ? 'rgba(201,169,110,0.12)' : 'rgba(250,243,232,0.05)',
+              border: plan.highlight ? '1px solid rgba(201,169,110,0.50)' : '1px solid rgba(201,169,110,0.15)',
+              borderRadius: 20,
+              padding: '28px 24px',
+              display: 'flex', flexDirection: 'column',
+              backdropFilter: 'blur(8px)',
+              boxShadow: plan.highlight ? '0 0 0 1px rgba(201,169,110,0.20), 0 8px 32px rgba(0,0,0,0.3)' : 'none',
+            }}>
+              {plan.highlight && (
+                <div style={{ color: '#C9A96E', fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+                  ★ Most Popular
+                </div>
+              )}
+              <div style={{ color: '#FAF3E8', fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{plan.label}</div>
+              <div style={{ color: '#C9A96E', fontSize: 26, fontWeight: 800, marginBottom: 16 }}>{plan.price}</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {plan.features.map(f => (
+                  <li key={f} style={{ color: 'rgba(250,243,232,0.65)', fontSize: 13, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    <span style={{ color: '#C9A96E', flexShrink: 0, marginTop: 1 }}>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => startTrial(plan.key)}
+                style={{
+                  width: '100%', padding: '12px 0', borderRadius: 10, border: 'none',
+                  background: plan.highlight ? 'linear-gradient(135deg, #C9A96E, #A0522D)' : 'rgba(250,243,232,0.10)',
+                  color: plan.highlight ? '#1B0F0A' : '#C9A96E',
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  boxShadow: plan.highlight ? '0 4px 16px rgba(201,169,110,0.35)' : 'none',
+                  border: plan.highlight ? 'none' : '1px solid rgba(201,169,110,0.25)',
+                } as React.CSSProperties}
+              >
+                Start Free Trial <ArrowRight style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ color: 'rgba(250,243,232,0.25)', fontSize: 12, margin: '0 0 6px' }}>
+            14-day free trial · Card required · Cancel before trial ends and you won't be charged
+          </p>
+          <button onClick={() => navigate('/account')}
+            style={{ background: 'none', border: 'none', color: 'rgba(250,243,232,0.30)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>
+            Manage account
+          </button>
+        </div>
       </div>
     </div>
   );
