@@ -27,83 +27,125 @@ interface SavedGrant extends Grant {
 
 function WelcomeScreen({ userName }: { userName: string }) {
   const [, navigate] = useLocation();
+
   const steps = [
     {
-      number: '1',
+      number: '01',
       icon: Building2,
       title: 'Set Up Your Business Profile',
-      description: 'Tell us about your business so we can match you with the right grants — industry, location, size, and goals.',
+      description: 'Tell us about your business — industry, location, size, and goals — so we can find the grants that actually fit.',
       action: 'Set Up Profile',
       href: '/profile',
-      color: 'blue',
     },
     {
-      number: '2',
+      number: '02',
       icon: Search,
       title: 'Search for Matching Grants',
-      description: 'Our AI scans thousands of federal, state, and private grants and scores each one on how well it fits your business.',
+      description: 'Our AI scans thousands of federal, state, and private grants and scores each one on how well it matches your business.',
       action: 'Find Grants',
       href: '/search',
-      color: 'emerald',
     },
     {
-      number: '3',
+      number: '03',
       icon: FileText,
       title: 'Generate Your Application',
-      description: 'Save grants you like, then let AI draft your application in minutes using your business profile.',
+      description: 'Save grants you like, then let AI write your application draft in minutes using your profile data.',
       action: 'View Tracker',
       href: '/',
-      color: 'purple',
     },
   ];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <div className="text-center mb-10">
-        <div className="w-14 h-14 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <Trophy className="w-7 h-7 text-white" />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(165deg, #2C1810 0%, #3E2723 25%, #4E342E 45%, #5D4037 65%, #3E2723 85%, #1B0F0A 100%)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Ambient orbs */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', width: 600, height: 600, top: '-10%', left: '10%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,169,110,0.10) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', width: 400, height: 400, bottom: '5%', right: '5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(160,82,45,0.12) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', width: 250, height: 250, top: '45%', left: '55%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,201,128,0.07) 0%, transparent 70%)' }} />
+      </div>
+
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 760, margin: '0 auto', padding: '60px 24px' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: 16,
+            background: 'linear-gradient(135deg, #C9A96E, #8B4513)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+            boxShadow: '0 8px 24px rgba(201,169,110,0.3)',
+          }}>
+            <Trophy style={{ width: 28, height: 28, color: '#1B0F0A' }} />
+          </div>
+          <h1 style={{ color: '#FAF3E8', fontSize: 32, fontWeight: 800, margin: '0 0 8px', letterSpacing: '-0.5px' }}>
+            Welcome, {userName.split(' ')[0]}!
+          </h1>
+          <p style={{ color: 'rgba(250,243,232,0.55)', fontSize: 16, margin: 0 }}>
+            You're 3 steps away from finding grants for your business.
+          </p>
         </div>
-        <h1 className="text-3xl font-bold text-slate-900">Welcome, {userName.split(' ')[0]}!</h1>
-        <p className="text-slate-500 mt-2 text-base">
-          You're 3 steps away from finding grants for your business.
+
+        {/* Steps */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {steps.map((step, i) => {
+            const Icon = step.icon;
+            return (
+              <div key={i} style={{
+                background: 'rgba(250,243,232,0.06)',
+                border: '1px solid rgba(201,169,110,0.20)',
+                borderRadius: 20,
+                padding: '28px 32px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 24,
+                backdropFilter: 'blur(8px)',
+              }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                  background: 'linear-gradient(135deg, rgba(201,169,110,0.25), rgba(139,69,19,0.20))',
+                  border: '1px solid rgba(201,169,110,0.30)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Icon style={{ width: 22, height: 22, color: '#C9A96E' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: 'rgba(201,169,110,0.70)', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Step {step.number}
+                  </div>
+                  <div style={{ color: '#FAF3E8', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{step.title}</div>
+                  <div style={{ color: 'rgba(250,243,232,0.50)', fontSize: 13, lineHeight: 1.6 }}>{step.description}</div>
+                </div>
+                <button
+                  onClick={() => navigate(step.href)}
+                  style={{
+                    flexShrink: 0,
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '10px 20px',
+                    borderRadius: 10,
+                    background: i === 0 ? 'linear-gradient(135deg, #C9A96E, #A0522D)' : 'rgba(250,243,232,0.10)',
+                    border: i === 0 ? 'none' : '1px solid rgba(201,169,110,0.25)',
+                    color: i === 0 ? '#1B0F0A' : '#C9A96E',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: i === 0 ? '0 4px 16px rgba(201,169,110,0.30)' : 'none',
+                  }}
+                >
+                  {step.action} <ArrowRight style={{ width: 14, height: 14 }} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <p style={{ textAlign: 'center', color: 'rgba(250,243,232,0.25)', fontSize: 12, marginTop: 32 }}>
+          Start with Step 1 — setting up your profile takes about 2 minutes
         </p>
       </div>
-
-      <div className="space-y-4">
-        {steps.map((step, i) => {
-          const Icon = step.icon;
-          const colors = {
-            blue: { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'bg-blue-700', btn: 'bg-blue-700 hover:bg-blue-800', num: 'text-blue-700' },
-            emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'bg-emerald-600', btn: 'bg-emerald-600 hover:bg-emerald-700', num: 'text-emerald-600' },
-            purple: { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'bg-purple-700', btn: 'bg-purple-700 hover:bg-purple-800', num: 'text-purple-700' },
-          }[step.color as 'blue' | 'emerald' | 'purple'];
-
-          return (
-            <div key={i} className={cn('rounded-2xl border p-6 flex items-start gap-5', colors.bg, colors.border)}>
-              <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white', colors.icon)}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={cn('text-xs font-bold uppercase tracking-wide', colors.num)}>Step {step.number}</span>
-                </div>
-                <h3 className="font-semibold text-slate-900 text-base">{step.title}</h3>
-                <p className="text-slate-500 text-sm mt-1 leading-relaxed">{step.description}</p>
-              </div>
-              <button
-                onClick={() => navigate(step.href)}
-                className={cn('flex items-center gap-1.5 px-4 py-2 text-white rounded-lg text-sm font-medium flex-shrink-0 transition-colors', colors.btn)}
-              >
-                {step.action} <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="text-center text-xs text-slate-400 mt-8">
-        Start with Step 1 — setting up your profile takes about 2 minutes.
-      </p>
     </div>
   );
 }
