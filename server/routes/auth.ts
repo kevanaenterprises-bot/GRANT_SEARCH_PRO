@@ -113,6 +113,7 @@ function sanitizeUser(user: any) {
     name: user.name,
     plan: user.plan,
     stripeCustomerId: user.stripeCustomerId,
+    stripeSubscriptionId: user.stripeSubscriptionId,
     stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
     hasSamKey: !!user.samApiKey,
     createdAt: user.createdAt,
