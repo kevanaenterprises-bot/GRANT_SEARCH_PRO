@@ -498,7 +498,7 @@ export default function Login() {
               ))}
             </div>
 
-            <p className="gsp-pricing-note">All plans include a 14-day free trial · No credit card required to start</p>
+            <p className="gsp-pricing-note">All plans include a 14-day free trial · Credit card required · Cancel anytime before trial ends</p>
           </div>
         </div>
       </div>

@@ -36,14 +36,22 @@ billingRouter.post('/checkout', requireAuth, async (req: AuthRequest, res) => {
     }
 
     const appUrl = process.env.APP_URL || 'http://localhost:5173';
+    // Check if user has ever had a paid subscription (prevent trial recycling)
+    const hadTrial = !!(user.stripeSubscriptionId || user.stripeCurrentPeriodEnd);
+    const trialDays = hadTrial ? undefined : 14;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
+      payment_method_collection: 'always',
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${appUrl}/account?upgraded=1`,
       cancel_url: `${appUrl}/account`,
-      subscription_data: { metadata: { userId: String(user.id), plan } },
+      subscription_data: {
+        metadata: { userId: String(user.id), plan },
+        ...(trialDays ? { trial_period_days: trialDays } : {}),
+      },
     });
 
     res.json({ url: session.url });

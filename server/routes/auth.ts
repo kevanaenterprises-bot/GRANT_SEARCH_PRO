@@ -6,11 +6,39 @@ import { signToken, hashPassword, checkPassword, encrypt, decrypt, requireAuth, 
 
 export const authRouter = Router();
 
+// Disposable/temporary email domain blocklist
+const DISPOSABLE_DOMAINS = new Set([
+  'mailinator.com','guerrillamail.com','guerrillamail.net','guerrillamail.org',
+  'guerrillamail.biz','guerrillamail.de','guerrillamail.info','sharklasers.com',
+  'guerrillamailblock.com','grr.la','spam4.me','yopmail.com','yopmail.fr',
+  'cool.fr.nf','jetable.fr.nf','nospam.ze.tc','nomail.xl.cx','mega.zik.dj',
+  'speed.1s.fr','courriel.fr.nf','moncourrier.fr.nf','monemail.fr.nf',
+  'monmail.fr.nf','tempmail.com','temp-mail.org','throwam.com','throwam.net',
+  'trashmail.com','trashmail.me','trashmail.net','dispostable.com',
+  'mailnull.com','spamgourmet.com','spamgourmet.net','spamgourmet.org',
+  'maildrop.cc','tempr.email','discard.email','fakeinbox.com','mailnesia.com',
+  'mailnull.com','spamfree24.org','spamfree24.de','spamfree24.info',
+  'spamfree24.biz','spamfree24.net','spamfree24.org','mail-temporaire.fr',
+  'jetable.com','jetable.net','jetable.org','jetable.de','jetable.info',
+  'wegwerfmail.de','wegwerfmail.net','wegwerfmail.org','10minutemail.com',
+  '10minutemail.net','10minutemail.org','10minutemail.de','throwam.com',
+  'mailnull.com','spamhereplease.com','spamhereplease.net','spamhereplease.org',
+  'getairmail.com','filzmail.com','dispostable.com','maildrop.cc',
+  'cfl.fr','jnxjn.com','jourrapide.com','objectmail.com','obobbo.com',
+  'oneoffemail.com','online.ms','onqin.com','opayq.com','ordinaryamerican.net',
+]);
+
+function isDisposableEmail(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase();
+  return domain ? DISPOSABLE_DOMAINS.has(domain) : false;
+}
+
 authRouter.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
     if (!email || !password || !name) return res.status(400).json({ error: 'email, password, and name required' });
     if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (isDisposableEmail(email)) return res.status(400).json({ error: 'Temporary or disposable email addresses are not allowed. Please use your real email.' });
 
     const existing = await db.select().from(users).where(eq(users.email, email.toLowerCase().trim()));
     if (existing.length) return res.status(409).json({ error: 'An account with that email already exists' });
