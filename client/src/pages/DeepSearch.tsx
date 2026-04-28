@@ -134,26 +134,54 @@ export default function DeepSearch() {
   const displayGrants = scored.length ? scored : results;
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50">
       <Nav />
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Deep Search</h1>
-          <p className="text-slate-500 text-sm">Headless browser crawls state portals, SBA, and grant databases — plus SAM.gov set-aside contracts</p>
-        </div>
 
+      {/* Hero banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, #3E2723 0%, #5D4037 50%, #4E342E 100%)',
+        borderBottom: '1px solid rgba(201,169,110,0.20)',
+      }} className="px-6 py-8">
+        <div className="max-w-5xl mx-auto flex items-center gap-4">
+          <div style={{
+            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+            background: 'linear-gradient(135deg, #C9A96E, #8B4513)',
+            boxShadow: '0 4px 16px rgba(201,169,110,0.35)',
+          }} className="flex items-center justify-center">
+            <Globe style={{ color: '#1B0F0A', width: 22, height: 22 }} />
+          </div>
+          <div>
+            <h1 style={{ color: '#FAF3E8' }} className="text-2xl font-bold m-0">Deep Search</h1>
+            <p style={{ color: 'rgba(250,243,232,0.55)' }} className="text-sm m-0 mt-0.5">
+              Headless browser crawls state portals, SBA, and grant databases — plus SAM.gov set-aside contracts
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Tabs */}
-        <div className="flex gap-1 bg-slate-100 p-1 rounded-lg w-fit mb-5">
-          <button onClick={() => setTab('scrape')}
-            className={cn('flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              tab === 'scrape' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}>
-            <Globe className="w-4 h-4" /> Web Scrape
-          </button>
-          <button onClick={() => setTab('contracts')}
-            className={cn('flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              tab === 'contracts' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}>
-            <Building2 className="w-4 h-4" /> SAM Contracts
-          </button>
+        <div className="flex gap-2 mb-5">
+          {([
+            { key: 'scrape', label: 'Web Scrape', icon: Globe },
+            { key: 'contracts', label: 'SAM Contracts', icon: Building2 },
+          ] as const).map(({ key, label, icon: Icon }) => (
+            <button key={key} onClick={() => setTab(key)}
+              style={tab === key ? {
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: 'linear-gradient(135deg, #C9A96E, #8B4513)',
+                color: '#1B0F0A', fontSize: 13, fontWeight: 700,
+                boxShadow: '0 2px 10px rgba(160,82,45,0.30)',
+              } : {
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 18px', borderRadius: 10, cursor: 'pointer',
+                background: 'white', border: '1px solid #e2e8f0',
+                color: '#64748b', fontSize: 13, fontWeight: 500,
+              }}>
+              <Icon style={{ width: 14, height: 14 }} /> {label}
+            </button>
+          ))}
         </div>
 
         {/* Controls */}

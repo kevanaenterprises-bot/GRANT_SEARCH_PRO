@@ -123,54 +123,71 @@ export default function Account() {
     }
   };
 
+  const planColor = user?.plan === 'starter' ? '#3B82F6' : user?.plan === 'pro' ? '#9333EA' : user?.plan === 'agency' ? '#D97706' : '#64748B';
+
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50">
       <Nav />
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Account</h1>
 
-        {/* Profile card */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm mb-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold text-lg">
-                {user?.name?.[0]?.toUpperCase()}
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900">{user?.name}</p>
-                <p className="text-sm text-slate-500">{user?.email}</p>
-              </div>
-            </div>
-            <button onClick={handleLogout}
-              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-red-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50">
-              <LogOut className="w-4 h-4" /> Sign out
-            </button>
+      {/* Hero banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, #3E2723 0%, #5D4037 50%, #4E342E 100%)',
+        borderBottom: '1px solid rgba(201,169,110,0.20)',
+      }} className="px-6 py-8">
+        <div className="max-w-3xl mx-auto flex items-center gap-4">
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+            background: 'linear-gradient(135deg, #C9A96E, #8B4513)',
+            boxShadow: '0 4px 16px rgba(201,169,110,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, fontWeight: 800, color: '#1B0F0A',
+          }}>
+            {user?.name?.[0]?.toUpperCase()}
           </div>
-
-          <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-3">
-            <span className={cn(
-              'text-xs font-semibold px-2.5 py-1 rounded-full',
-              user?.plan === 'free' ? 'bg-slate-100 text-slate-600' :
-              user?.plan === 'starter' ? 'bg-blue-100 text-blue-700' :
-              user?.plan === 'pro' ? 'bg-purple-100 text-purple-700' :
-              'bg-amber-100 text-amber-700'
-            )}>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ color: '#FAF3E8', margin: 0 }} className="text-2xl font-bold">{user?.name}</h1>
+            <p style={{ color: 'rgba(250,243,232,0.55)', margin: '2px 0 0' }} className="text-sm">{user?.email}</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+              padding: '4px 10px', borderRadius: 20,
+              background: 'rgba(201,169,110,0.18)', color: '#C9A96E',
+              border: '1px solid rgba(201,169,110,0.35)',
+            }}>
               {user?.plan?.toUpperCase() || 'FREE'} PLAN
             </span>
-            {user?.plan !== 'free' && user?.stripeCurrentPeriodEnd && (
-              <span className="text-xs text-slate-500">
-                Renews {new Date(user.stripeCurrentPeriodEnd * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-            )}
-            {user?.plan !== 'free' && (
-              <button onClick={openPortal} disabled={portalLoading}
-                className="ml-auto flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-blue-200 transition-colors">
-                {portalLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
-                Manage Billing
-              </button>
-            )}
+            <button onClick={handleLogout}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                padding: '6px 12px', borderRadius: 8,
+                background: 'rgba(250,243,232,0.07)', border: '1px solid rgba(250,243,232,0.15)',
+                color: 'rgba(250,243,232,0.50)',
+              }}>
+              <LogOut style={{ width: 13, height: 13 }} /> Sign out
+            </button>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        {/* Billing strip */}
+        {user?.plan !== 'free' && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm mb-5 flex items-center gap-3">
+            <CreditCard className="w-4 h-4 text-slate-400" />
+            <span className="text-sm text-slate-700 font-medium flex-1">
+              {user?.stripeCurrentPeriodEnd
+                ? `Renews ${new Date(user.stripeCurrentPeriodEnd * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                : 'Active subscription'}
+            </span>
+            <button onClick={openPortal} disabled={portalLoading}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:border-amber-300 hover:bg-amber-50 text-slate-600 hover:text-amber-700 transition-colors">
+              {portalLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
+              Manage Billing
+            </button>
+          </div>
+        )}
 
         {/* SAM.gov API Key */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm mb-5">
@@ -250,32 +267,51 @@ export default function Account() {
         {user?.plan === 'free' && (
           <div>
             <h2 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" /> Upgrade Your Plan
+              <Zap className="w-4 h-4" style={{ color: '#C9A96E' }} /> Upgrade Your Plan
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {PLANS.map(plan => (
-                <div key={plan.key} className={cn('rounded-xl border p-4 relative', plan.color)}>
-                  {plan.badge && (
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-purple-700 text-white text-xs font-bold px-3 py-0.5 rounded-full">
-                      {plan.badge}
-                    </div>
-                  )}
-                  <div className="font-bold text-slate-900 mb-0.5">{plan.label}</div>
-                  <div className="text-lg font-bold text-slate-800 mb-3">{plan.price}</div>
-                  <ul className="space-y-1.5 mb-4">
-                    {plan.features.map(f => (
-                      <li key={f} className="text-xs text-slate-700 flex items-start gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <button onClick={() => startCheckout(plan.key)} disabled={checkoutLoading === plan.key}
-                    className={cn('w-full py-2 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2', plan.cta, 'disabled:opacity-50')}>
-                    {checkoutLoading === plan.key ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                    {checkoutLoading === plan.key ? 'Loading...' : 'Upgrade'}
-                  </button>
-                </div>
-              ))}
+              {PLANS.filter(p => ['starter','pro','business'].includes(p.key)).map(plan => {
+                const isHighlight = plan.key === 'pro';
+                return (
+                  <div key={plan.key} style={{
+                    borderRadius: 16, padding: 16, position: 'relative',
+                    background: isHighlight ? 'linear-gradient(135deg, rgba(201,169,110,0.10), rgba(139,69,19,0.06))' : 'white',
+                    border: isHighlight ? '1px solid rgba(201,169,110,0.45)' : '1px solid #e2e8f0',
+                    boxShadow: isHighlight ? '0 0 0 1px rgba(201,169,110,0.15), 0 4px 16px rgba(0,0,0,0.06)' : '0 1px 4px rgba(0,0,0,0.04)',
+                  }}>
+                    {plan.badge && (
+                      <div style={{
+                        position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+                        background: 'linear-gradient(135deg, #C9A96E, #8B4513)',
+                        color: '#1B0F0A', fontSize: 10, fontWeight: 800, padding: '2px 10px', borderRadius: 20,
+                        whiteSpace: 'nowrap',
+                      }}>{plan.badge}</div>
+                    )}
+                    <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: 2 }}>{plan.label}</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: isHighlight ? '#8B4513' : '#334155', marginBottom: 12 }}>{plan.price}</div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {plan.features.map(f => (
+                        <li key={f} style={{ fontSize: 12, color: '#475569', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                          <span style={{ color: '#C9A96E', flexShrink: 0, marginTop: 1 }}>✓</span> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <button onClick={() => startCheckout(plan.key)} disabled={checkoutLoading === plan.key}
+                      style={{
+                        width: '100%', padding: '9px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                        background: isHighlight ? 'linear-gradient(135deg, #C9A96E, #A0522D)' : 'rgba(201,169,110,0.12)',
+                        color: isHighlight ? '#1B0F0A' : '#8B4513',
+                        fontSize: 13, fontWeight: 700,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        boxShadow: isHighlight ? '0 3px 12px rgba(201,169,110,0.30)' : 'none',
+                        opacity: checkoutLoading === plan.key ? 0.6 : 1,
+                      }}>
+                      {checkoutLoading === plan.key ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                      {checkoutLoading === plan.key ? 'Loading...' : 'Start Free Trial'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -284,7 +320,7 @@ export default function Account() {
           <div className="text-center py-4">
             <p className="text-sm text-slate-500">
               Need to change or cancel your plan?{' '}
-              <button onClick={openPortal} className="text-blue-600 hover:underline">Open billing portal</button>
+              <button onClick={openPortal} className="text-amber-700 hover:underline font-medium">Open billing portal</button>
             </p>
           </div>
         )}

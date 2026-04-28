@@ -113,29 +113,52 @@ export default function Search() {
   const ModeIcon = modeConfig[mode].icon;
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50">
       <Nav />
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Find Grants</h1>
-          <p className="text-slate-500 text-sm">Search Grants.gov, SBA programs, and state portals — scored for your business</p>
-        </div>
 
+      {/* Hero banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, #3E2723 0%, #5D4037 50%, #4E342E 100%)',
+        borderBottom: '1px solid rgba(201,169,110,0.20)',
+      }} className="px-6 py-8">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <div style={{
+            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+            background: 'linear-gradient(135deg, #C9A96E, #8B4513)',
+            boxShadow: '0 4px 16px rgba(201,169,110,0.35)',
+          }} className="flex items-center justify-center">
+            <SearchIcon style={{ color: '#1B0F0A', width: 22, height: 22 }} />
+          </div>
+          <div>
+            <h1 style={{ color: '#FAF3E8' }} className="text-2xl font-bold m-0">Find Grants</h1>
+            <p style={{ color: 'rgba(250,243,232,0.55)' }} className="text-sm m-0 mt-0.5">
+              Search Grants.gov, SBA programs, and state portals — scored for your business
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Mode picker */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           {(Object.entries(modeConfig) as [SearchMode, typeof modeConfig[SearchMode]][]).map(([m, cfg]) => {
             const Icon = cfg.icon;
+            const active = mode === m;
             return (
               <button key={m} onClick={() => setMode(m)}
-                className={cn(
-                  'text-left p-3 rounded-xl border-2 transition-all',
-                  mode === m ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300'
-                )}>
+                style={active ? {
+                  background: 'linear-gradient(135deg, rgba(201,169,110,0.12), rgba(139,69,19,0.08))',
+                  border: '2px solid rgba(201,169,110,0.50)',
+                  borderRadius: 12, padding: 12, textAlign: 'left', cursor: 'pointer',
+                } : {
+                  background: 'white', border: '2px solid #e2e8f0',
+                  borderRadius: 12, padding: 12, textAlign: 'left', cursor: 'pointer',
+                }}>
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon className={cn('w-4 h-4', mode === m ? 'text-blue-600' : 'text-slate-400')} />
-                  <span className={cn('text-sm font-semibold', mode === m ? 'text-blue-700' : 'text-slate-700')}>{cfg.label}</span>
+                  <Icon style={{ width: 16, height: 16, color: active ? '#C9A96E' : '#94a3b8' }} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: active ? '#8B4513' : '#334155' }}>{cfg.label}</span>
                 </div>
-                <p className="text-xs text-slate-500">{cfg.desc}</p>
+                <p style={{ fontSize: 11, color: active ? 'rgba(139,69,19,0.70)' : '#94a3b8', margin: 0 }}>{cfg.desc}</p>
               </button>
             );
           })}
@@ -254,3 +277,4 @@ export default function Search() {
     </div>
   );
 }
+
