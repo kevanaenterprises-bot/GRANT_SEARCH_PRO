@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Route, Switch, Redirect, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from './pages/Dashboard';
