@@ -1,33 +1,31 @@
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schema from './schema.js';
-import { mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataDir = join(__dirname, '..', 'data');
-mkdirSync(dataDir, { recursive: true });
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) throw new Error('DATABASE_URL is not set');
 
-const client = createClient({ url: `file:${join(dataDir, 'grants.db')}` });
+const client = postgres(connectionString, { ssl: 'require' });
 export const db = drizzle(client, { schema });
 
-await client.executeMultiple(`
+await client`
   CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
     plan TEXT NOT NULL DEFAULT 'free',
     stripe_customer_id TEXT,
     stripe_subscription_id TEXT,
-    stripe_current_period_end INTEGER,
+    stripe_current_period_end BIGINT,
     sam_api_key TEXT,
-    created_at INTEGER
-  );
+    created_at BIGINT
+  )
+`;
 
+await client`
   CREATE TABLE IF NOT EXISTS business_profiles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL DEFAULT 0,
     name TEXT NOT NULL,
     ein TEXT,
@@ -39,11 +37,13 @@ await client.executeMultiple(`
     annual_revenue INTEGER,
     ownership_type TEXT,
     description TEXT,
-    created_at INTEGER
-  );
+    created_at BIGINT
+  )
+`;
 
+await client`
   CREATE TABLE IF NOT EXISTS saved_grants (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL DEFAULT 0,
     opportunity_id TEXT NOT NULL,
     title TEXT NOT NULL,
@@ -63,32 +63,23 @@ await client.executeMultiple(`
     match_reasoning TEXT,
     notes TEXT,
     profile_id INTEGER,
-    created_at INTEGER,
-    updated_at INTEGER
-  );
+    created_at BIGINT,
+    updated_at BIGINT
+  )
+`;
 
+await client`
   CREATE TABLE IF NOT EXISTS application_drafts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL DEFAULT 0,
     grant_id INTEGER,
     profile_id INTEGER,
     fields TEXT NOT NULL,
     ai_narrative TEXT,
     status TEXT NOT NULL DEFAULT 'draft',
-    created_at INTEGER,
-    updated_at INTEGER
-  );
-`);
-
-// Non-destructive column additions for existing databases
-const migrations = [
-  `ALTER TABLE business_profiles ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0`,
-  `ALTER TABLE business_profiles ADD COLUMN uei TEXT`,
-  `ALTER TABLE saved_grants ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0`,
-  `ALTER TABLE application_drafts ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0`,
-];
-for (const m of migrations) {
-  await client.execute(m).catch(() => {}); // silently skip if column exists
-}
+    created_at BIGINT,
+    updated_at BIGINT
+  )
+`;
 
 console.log('✅ Database ready');

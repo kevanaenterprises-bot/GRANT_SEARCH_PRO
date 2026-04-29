@@ -1,20 +1,20 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, bigint, real, serial } from 'drizzle-orm/pg-core';
 
-export const users = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   name: text('name').notNull(),
-  plan: text('plan').notNull().default('free'), // free | starter | pro | business
+  plan: text('plan').notNull().default('free'),
   stripeCustomerId: text('stripe_customer_id'),
   stripeSubscriptionId: text('stripe_subscription_id'),
-  stripeCurrentPeriodEnd: integer('stripe_current_period_end'), // unix timestamp
-  samApiKey: text('sam_api_key'), // AES-encrypted
-  createdAt: integer('created_at'),
+  stripeCurrentPeriodEnd: bigint('stripe_current_period_end', { mode: 'number' }),
+  samApiKey: text('sam_api_key'),
+  createdAt: bigint('created_at', { mode: 'number' }),
 });
 
-export const businessProfiles = sqliteTable('business_profiles', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const businessProfiles = pgTable('business_profiles', {
+  id: serial('id').primaryKey(),
   userId: integer('user_id').notNull(),
   name: text('name').notNull(),
   ein: text('ein'),
@@ -26,11 +26,11 @@ export const businessProfiles = sqliteTable('business_profiles', {
   annualRevenue: integer('annual_revenue'),
   ownershipType: text('ownership_type'),
   description: text('description'),
-  createdAt: integer('created_at'),
+  createdAt: bigint('created_at', { mode: 'number' }),
 });
 
-export const savedGrants = sqliteTable('saved_grants', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const savedGrants = pgTable('saved_grants', {
+  id: serial('id').primaryKey(),
   userId: integer('user_id').notNull(),
   opportunityId: text('opportunity_id').notNull(),
   title: text('title').notNull(),
@@ -50,18 +50,18 @@ export const savedGrants = sqliteTable('saved_grants', {
   matchReasoning: text('match_reasoning'),
   notes: text('notes'),
   profileId: integer('profile_id'),
-  createdAt: integer('created_at'),
-  updatedAt: integer('updated_at'),
+  createdAt: bigint('created_at', { mode: 'number' }),
+  updatedAt: bigint('updated_at', { mode: 'number' }),
 });
 
-export const applicationDrafts = sqliteTable('application_drafts', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const applicationDrafts = pgTable('application_drafts', {
+  id: serial('id').primaryKey(),
   userId: integer('user_id').notNull(),
   grantId: integer('grant_id'),
   profileId: integer('profile_id'),
   fields: text('fields').notNull(),
   aiNarrative: text('ai_narrative'),
   status: text('status').notNull().default('draft'),
-  createdAt: integer('created_at'),
-  updatedAt: integer('updated_at'),
+  createdAt: bigint('created_at', { mode: 'number' }),
+  updatedAt: bigint('updated_at', { mode: 'number' }),
 });
